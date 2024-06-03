@@ -89,6 +89,7 @@ const quoteMerge = function (splits) {
     }
     // New logic to handle sentence ending with a quote containing punctuation
     if (split.match(/".*[.!?]"$/) && !isConjunction(splits[i + 1])) {
+      console.log('split', split)
       arr.push(splits[i])
       continue
     }
