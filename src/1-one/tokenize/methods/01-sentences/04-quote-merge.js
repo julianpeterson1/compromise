@@ -1,8 +1,8 @@
 /* eslint-disable regexp/no-dupe-characters-character-class */
 
 // merge embedded quotes into 1 sentence
-// like - 'he said "no!" and left.' 
-const MAX_QUOTE = 280// ¯\_(ツ)_/¯
+// like - 'he said "no!" and left.'
+const MAX_QUOTE = 280 // ¯\_(ツ)_/¯
 
 // don't support single-quotes for multi-sentences
 const pairs = {
@@ -27,6 +27,7 @@ const pairs = {
 }
 const openQuote = RegExp('[' + Object.keys(pairs).join('') + ']', 'g')
 const closeQuote = RegExp('[' + Object.values(pairs).join('') + ']', 'g')
+const conjunctions = ['and', 'but', 'or', 'nor', 'for', 'so', 'yet']
 
 const closesQuote = function (str) {
   if (!str) {
@@ -39,6 +40,14 @@ const closesQuote = function (str) {
   return false
 }
 
+const isConjunction = function (str) {
+  if (!str) {
+    return false
+  }
+  let firstWord = str.trim().split(' ')[0].toLowerCase()
+  return conjunctions.includes(firstWord)
+}
+
 // allow micro-sentences when inside a quotation, like:
 // the doc said "no sir. i will not beg" and walked away.
 const quoteMerge = function (splits) {
@@ -48,10 +57,9 @@ const quoteMerge = function (splits) {
     // do we have an open-quote and not a closed one?
     let m = split.match(openQuote)
     if (m !== null && m.length === 1) {
-
       // look at the next sentence for a closing quote,
       if (closesQuote(splits[i + 1]) && splits[i + 1].length < MAX_QUOTE) {
-        splits[i] += splits[i + 1]// merge them
+        splits[i] += splits[i + 1] // merge them
         arr.push(splits[i])
         splits[i + 1] = ''
         i += 1
@@ -59,8 +67,8 @@ const quoteMerge = function (splits) {
       }
       // look at n+2 for a closing quote,
       if (closesQuote(splits[i + 2])) {
-        let toAdd = splits[i + 1] + splits[i + 2]// merge them all
-        //make sure it's not too-long
+        let toAdd = splits[i + 1] + splits[i + 2] // merge them all
+        // make sure it's not too-long
         if (toAdd.length < MAX_QUOTE) {
           splits[i] += toAdd
           arr.push(splits[i])
@@ -71,8 +79,17 @@ const quoteMerge = function (splits) {
         }
       }
     }
+    // New logic to handle the specific case
+    if (split.match(/".*[.!?]"$/) && isConjunction(splits[i + 1])) {
+      splits[i] += ' ' + splits[i + 1]
+      arr.push(splits[i])
+      splits[i + 1] = ''
+      i += 1
+      continue
+    }
     arr.push(splits[i])
   }
   return arr
 }
+
 export default quoteMerge

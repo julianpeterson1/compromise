@@ -1,9 +1,19 @@
-const MAX_LEN = 250// ¯\_(ツ)_/¯
+const MAX_LEN = 250 // ¯\_(ツ)_/¯
 
 // support unicode variants?
 // https://stackoverflow.com/questions/13535172/list-of-all-unicodes-open-close-brackets
 const hasOpen = /\(/g
 const hasClosed = /\)/g
+const conjunctions = ['and', 'but', 'or', 'nor', 'for', 'so', 'yet']
+
+const isConjunction = function (str) {
+  if (!str) {
+    return false
+  }
+  let firstWord = str.trim().split(' ')[0].toLowerCase()
+  return conjunctions.includes(firstWord)
+}
+
 const mergeParens = function (splits) {
   let arr = []
   for (let i = 0; i < splits.length; i += 1) {
@@ -13,7 +23,7 @@ const mergeParens = function (splits) {
       // look at next sentence, for closing parenthesis
       if (splits[i + 1] && splits[i + 1].length < MAX_LEN) {
         let m2 = splits[i + 1].match(hasClosed)
-        if (m2 !== null && m.length === 1 && !hasOpen.test(splits[i + 1])) {
+        if (m2 !== null && m2.length === 1 && !hasOpen.test(splits[i + 1])) {
           // merge in 2nd sentence
           splits[i] += splits[i + 1]
           arr.push(splits[i])
@@ -23,8 +33,17 @@ const mergeParens = function (splits) {
         }
       }
     }
+    // New logic to handle the specific case
+    if (split.match(/\(.*[.!?]\)$/) && isConjunction(splits[i + 1])) {
+      splits[i] += ' ' + splits[i + 1]
+      arr.push(splits[i])
+      splits[i + 1] = ''
+      i += 1
+      continue
+    }
     arr.push(splits[i])
   }
   return arr
 }
+
 export default mergeParens
