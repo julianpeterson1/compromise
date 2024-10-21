@@ -112,3 +112,13 @@ test('nested quotes', function (t) {
   t.equal(doc.length, 3, here + '1 quotes with 3 sentences')
   t.end()
 })
+
+test('quotes containing full sentences', function (t) {
+  let doc = nlp(`Descartes famously said "Yo!" I agree.`)
+  t.equal(doc.length, 2, here + 'quote that ends a sentence')
+
+  doc = nlp(`Descartes famously said "Yo!" but I agree.`)
+  t.equal(doc.length, 1, here + 'quote followed by a conjunction')
+
+  t.end()
+})
